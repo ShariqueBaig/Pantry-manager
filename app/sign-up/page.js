@@ -19,6 +19,10 @@ const Signup = () => {
             console.log("Passwords do not match");
             return;
         }
+        if(name === '' || email === '' || password === '' || confirmPassword === '') {
+            console.log("Please fill all the fields");
+            return;
+        }
         try {
             const res = await createUserWithEmailAndPassword(email, password);
             console.log(res);
