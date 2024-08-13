@@ -31,14 +31,14 @@ export default function Home() {
   // Add item to the database
   const addItem = async (e) => {
     e.preventDefault();
-    if (newItem.name !== "" && newItem.quantity !== "") {
-      await addDoc(collection(db, "pantry management"), {
-        name: newItem.name.trim(),
-        quantity: parseInt(newItem.quantity),
-      });
-      setNewItem({ name: "", quantity: "" });
+    if (user && newItem.name !== "" && newItem.quantity !== "") {
+        await addDoc(collection(db, "users", user.uid, "pantry management"), {
+            name: newItem.name.trim(),
+            quantity: parseInt(newItem.quantity),
+        });
+        setNewItem({ name: "", quantity: "" });
     }
-  };
+};
 
   // Update quantity in the database
   const updateQuantity = async (item) => {
@@ -47,36 +47,36 @@ export default function Home() {
   };
 
   const handleUpdate = async () => {
-    if (selectedItem && addedQuantity > 0) {
-      const docRef = doc(db, "pantry management", selectedItem.id);
-      const updatedQuantity = parseInt(addedQuantity) + parseInt(selectedItem.quantity);
-      await updateDoc(docRef, { quantity: updatedQuantity });
-      setItems(items.map((item) =>
-        item.id === selectedItem.id
-          ? { ...item, quantity: updatedQuantity }
-          : item
-      ));
-      setIsUpdateScreenVisible(false);
-      setAddedQuantity("");
+    if (user && selectedItem && addedQuantity > 0) {
+        const docRef = doc(db, "users", user.uid, "pantry management", selectedItem.id);
+        const updatedQuantity = parseInt(addedQuantity) + parseInt(selectedItem.quantity);
+        await updateDoc(docRef, { quantity: updatedQuantity });
+        setItems(items.map((item) =>
+            item.id === selectedItem.id
+                ? { ...item, quantity: updatedQuantity }
+                : item
+        ));
+        setIsUpdateScreenVisible(false);
+        setAddedQuantity("");
     } else {
-      alert("Please enter a valid quantity to add");
+        alert("Please enter a valid quantity to add");
     }
-  };
+};
 
   // Read items from the database
   useEffect(() => {
-    if (!isUserSearching) {
-      const q = query(collection(db, "pantry management"));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const itemArr = [];
-        querySnapshot.forEach((doc) => {
-          itemArr.push({ ...doc.data(), id: doc.id });
+    if (user && !isUserSearching) {
+        const q = query(collection(db, "users", user.uid, "pantry management"));
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const itemArr = [];
+            querySnapshot.forEach((doc) => {
+                itemArr.push({ ...doc.data(), id: doc.id });
+            });
+            setItems(itemArr);
         });
-        setItems(itemArr);
-      });
-      return () => unsubscribe();
+        return () => unsubscribe();
     }
-  }, [isUserSearching]);
+}, [user, isUserSearching]);
 
   // Show the reduce item screen
   const reduceItem = (item) => {
@@ -86,39 +86,40 @@ export default function Home() {
 
   // Handle reducing the item quantity
   const handleReduce = async () => {
-    if (selectedItem && reduceQuantity > 0) {
-      const updatedQuantity = selectedItem.quantity - parseInt(reduceQuantity);
+    if (user && selectedItem && reduceQuantity > 0) {
+        const updatedQuantity = selectedItem.quantity - parseInt(reduceQuantity);
 
-      if (updatedQuantity > 0) {
-        const docRef = doc(db, "pantry management", selectedItem.id);
-        await updateDoc(docRef, { quantity: updatedQuantity });
+        if (updatedQuantity > 0) {
+            const docRef = doc(db, "users", user.uid, "pantry management", selectedItem.id);
+            await updateDoc(docRef, { quantity: updatedQuantity });
 
-        setItems(items.map((item) =>
-          item.id === selectedItem.id
-            ? { ...item, quantity: updatedQuantity }
-            : item
-        ));
+            setItems(items.map((item) =>
+                item.id === selectedItem.id
+                    ? { ...item, quantity: updatedQuantity }
+                    : item
+            ));
 
-        // Close the reduce screen
-        setIsReduceScreenVisible(false);
-        setReduceQuantity("");
-      } else if (updatedQuantity === 0) {
-        removeItem(selectedItem.id);
-        setIsReduceScreenVisible(false);
-        setReduceQuantity("");
-      } else {
-        alert("You can't reduce more than you have!");
-      }
+            // Close the reduce screen
+            setIsReduceScreenVisible(false);
+            setReduceQuantity("");
+        } else if (updatedQuantity === 0) {
+            removeItem(selectedItem.id);
+            setIsReduceScreenVisible(false);
+            setReduceQuantity("");
+        } else {
+            alert("You can't reduce more than you have!");
+        }
     }
-  };
+};
 
   // Remove item from the database
   const removeItem = async (id) => {
-    const docRef = doc(db, "pantry management", id);
-    await deleteDoc(docRef);
-    setItems(items.filter((item) => item.id !== id));
-  };
-
+    if (user) {
+        const docRef = doc(db, "users", user.uid, "pantry management", id);
+        await deleteDoc(docRef);
+        setItems(items.filter((item) => item.id !== id));
+    }
+};
   // Search item from the database
   const searchItem = async (e) => {
     e.preventDefault();
