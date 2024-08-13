@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import {useSignInWithEmailAndPassword} from 'react-firebase-hooks/auth';
-import {auth} from '@/app/firebase/firebase';
-import {useRouter} from 'next/navigation';
+import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { auth } from '@/app/firebase/firebase';
+import { useRouter } from 'next/navigation';
 
 const SignIn = () => {
     const [email, setEmail] = useState('');
@@ -11,17 +11,22 @@ const SignIn = () => {
     const router = useRouter();
 
     const handleSignIn = async (e) => {
-       try {
+        try {
             e.preventDefault();
             const res = await signInWithEmailAndPassword(email, password);
+            
+            if (typeof window !== "undefined") {
+                sessionStorage.setItem('user', true);
+            }
+            
             console.log(res);
             setEmail('');
             setPassword('');
             router.push('/');
-       }
-       catch (error) {
+        }
+        catch (error) {
             console.log(error);
-       }
+        }
     };
 
     return (
