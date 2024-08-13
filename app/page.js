@@ -18,11 +18,15 @@ export default function Home() {
   const [searchedItem, setSearchedItem] = useState(null);
   const [user] = useAuthState(auth);
   const router = useRouter();
-  const userSession = sessionStorage.getItem('user');
 
-  if(!user && !userSession) {
-    router.push('/sign-in');
-  }
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userSession = sessionStorage.getItem('user');
+      if (!user && !userSession) {
+        router.push('/sign-in');
+      }
+    }
+  }, [user, router]);
 
   // Add item to the database
   const addItem = async (e) => {
