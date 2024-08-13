@@ -13,6 +13,8 @@ const SignIn = () => {
     const handleSignIn = async (e) => {
         try {
             e.preventDefault();
+            if(email !== '' && password !== '') {
+
             const res = await signInWithEmailAndPassword(email, password);
             
             if (typeof window !== "undefined") {
@@ -22,7 +24,10 @@ const SignIn = () => {
             console.log(res);
             setEmail('');
             setPassword('');
-            router.push('/');
+            router.push('/');}
+            else {
+                alert('Please enter email and password');
+            }
         }
         catch (error) {
             console.log(error);
